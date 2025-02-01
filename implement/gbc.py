@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-# Load dataset
+#Load dataset
 data = pd.read_csv('phishing.csv')
 
 # Feature extraction (example)

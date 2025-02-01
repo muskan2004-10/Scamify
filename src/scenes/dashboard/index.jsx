@@ -3,18 +3,51 @@ import { tokens } from "../../theme";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import { motion } from "framer-motion";
-
+import { useState } from "react";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  // State to manage URL input and response
+  const [url, setUrl] = useState("");
+  const [responseMessage, setResponseMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleCheckUrl = async () => {
+    if (!url.trim()) {
+      setErrorMessage("Please enter a valid URL.");
+      return;
+    }
+
+    try {
+      // Send POST request to backend API
+      const response = await fetch("http://127.0.0.1:5000/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch prediction. Please try again.");
+      }
+
+      const data = await response.json();
+      setResponseMessage(data.message || "Prediction received!");
+      setErrorMessage(""); // Clear any previous error message
+    } catch (error) {
+      setErrorMessage(error.message);
+      setResponseMessage(""); // Clear any previous response message
+    }
+  };
 
   return (
     <Box m="20px">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb="20px">
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-
         <Button
           sx={{
             backgroundColor: colors.blueAccent[700],
@@ -33,65 +66,43 @@ const Dashboard = () => {
       </Box>
 
       {/* SCAMIFY INTRO */}
-      
-    <Box textAlign="center" mb="30px">
-      {/* Animated heading */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <Typography
-          variant="h1"
-          fontWeight="bold"
-          color={colors.blueAccent[500]}
-          sx={{
-            textShadow: "2px 2px 10px rgba(0, 0, 255, 0.5)",
-            fontSize: { xs: "2.5rem", sm: "4rem", md: "5rem" },
-          }}
+      <Box textAlign="center" mb="30px">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          SCAMIFY
-        </Typography>
-      </motion.div>
+          <Typography
+            variant="h1"
+            fontWeight="bold"
+            color={colors.blueAccent[500]}
+            sx={{
+              textShadow: "2px 2px 10px rgba(0, 0, 255, 0.5)",
+              fontSize: { xs: "2.5rem", sm: "4rem", md: "5rem" },
+            }}
+          >
+            SCAMIFY
+          </Typography>
+        </motion.div>
 
-      {/* Animated subtitle */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-      >
-        <Typography
-          variant="subtitle1"
-          color={colors.grey[200]}
-          mt="7px"
-          sx={{
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            textShadow: "1px 1px 5px rgba(255, 255, 255, 0.3)",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         >
-          A powerful tool to detect phishing websites and protect your data.
-        </Typography>
-      </motion.div>
-
-      {/* Animated tagline */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-      >
-        <Typography
-          variant="subtitle1"
-          color={colors.grey[200]}
-          sx={{
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            marginTop: "10px",
-            textShadow: "1px 1px 5px rgba(255, 255, 255, 0.3)",
-          }}
-        >
-          Simply enter a URL to evaluate its authenticity.
-        </Typography>
-      </motion.div>
-    </Box>
+          <Typography
+            variant="subtitle1"
+            color={colors.grey[200]}
+            mt="7px"
+            sx={{
+              fontSize: { xs: "1rem", sm: "1.1rem" },
+              textShadow: "1px 1px 5px rgba(255, 255, 255, 0.3)",
+            }}
+          >
+            A powerful tool to detect phishing websites and protect your data.
+          </Typography>
+        </motion.div>
+      </Box>
 
       {/* URL Input Box */}
       <Box
@@ -110,11 +121,13 @@ const Dashboard = () => {
         >
           Insert a website URL below to detect if it's a phishing site.
         </Typography>
-        <Box display="flex" justifyContent="center" alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center" mb="15px">
           <TextField
             variant="outlined"
             placeholder="Enter website URL here"
             aria-label="Enter website URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
             sx={{
               input: { color: colors.grey[100] },
               backgroundColor: colors.grey[700],
@@ -125,6 +138,7 @@ const Dashboard = () => {
           />
           <Button
             variant="contained"
+            onClick={handleCheckUrl}
             sx={{
               backgroundColor: colors.blueAccent[700],
               color: colors.grey[100],
@@ -140,6 +154,18 @@ const Dashboard = () => {
             Check
           </Button>
         </Box>
+
+        {/* Display Response or Error Message */}
+        {responseMessage && (
+          <Typography variant="body1" color={colors.greenAccent[400]}>
+            {responseMessage}
+          </Typography>
+        )}
+        {errorMessage && (
+          <Typography variant="body1" color={colors.redAccent[400]}>
+            {errorMessage}
+          </Typography>
+        )}
       </Box>
     </Box>
   );

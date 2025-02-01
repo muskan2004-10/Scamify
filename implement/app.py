@@ -3,12 +3,22 @@ import os
 
 app = Flask(__name__, static_folder='../frontend/build')
 
-@app.route('/api/predict', methods=['POST'])
+@app.route('/api/predict', methods=['GET','POST'])
 def predict():
-    data = request.get_json()
-    # Process the data and make predictions
-    result = {'prediction': 'example_result'}
-    return jsonify(result)
+    if request.method == 'GET':
+        return jsonify({"message": "Use POST with JSON data to get predictions."})
+    
+    if request.method == 'POST':
+        # Attempt to parse JSON data from the request
+        try:
+            data = request.get_json()
+            # Process the data (this is just an example)
+            if data:
+                return jsonify({"message": "Prediction received!", "data": data})
+            else:
+                return jsonify({"error": "No JSON data provided"}), 400
+        except Exception as e:
+            return jsonify({"error": f"Invalid JSON: {str(e)}"}), 400
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
